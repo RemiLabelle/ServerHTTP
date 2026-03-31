@@ -3,7 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.37027.9 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerHTTP", "ServerHTTP\ServerHTTP.csproj", "{AC38345E-234C-401E-94AF-C5AB6F7A0742}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Network", "Network\Network.csproj", "{A3E5CA90-5F89-44F5-9965-C165AD8F2483}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AC38345E-234C-401E-94AF-C5AB6F7A0742}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC38345E-234C-401E-94AF-C5AB6F7A0742}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC38345E-234C-401E-94AF-C5AB6F7A0742}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC38345E-234C-401E-94AF-C5AB6F7A0742}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3E5CA90-5F89-44F5-9965-C165AD8F2483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3E5CA90-5F89-44F5-9965-C165AD8F2483}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3E5CA90-5F89-44F5-9965-C165AD8F2483}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3E5CA90-5F89-44F5-9965-C165AD8F2483}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
