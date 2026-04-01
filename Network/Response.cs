@@ -61,6 +61,14 @@ public class Response : Message
         protected int _statusCode = 200;
         protected string? _reasonPhrase;
 
+        public Builder() { }
+
+        public Builder(Response response) : base(response)
+        {
+            _statusCode = response.StatusCode;
+            _reasonPhrase = response.ReasonPhrase;
+        }
+
         public Builder SetStatusCode(int statusCode)
         {
             _statusCode = statusCode;

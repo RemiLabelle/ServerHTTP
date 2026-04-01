@@ -62,6 +62,14 @@ public class Request : Message
         protected string? _method;
         protected string? _path;
 
+        public Builder() { }
+
+        public Builder(Request request) : base(request)
+        {
+            _method = request.Method;
+            _path = request.Path;
+        }
+
         public Builder SetMethod(string method)
         {
             _method = method;
