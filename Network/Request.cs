@@ -18,7 +18,7 @@ public class Request : Message
     {
         string requestLine = $"{_method} {_path} {HttpVersion}\r\n";
 
-        return [.. Encoding.UTF8.GetBytes(requestLine), .. base.GetMessage()];
+        return [.. Encoding.UTF8.GetBytes(requestLine), .. GetHeadersBody()];
     }
 
     public string Method => _method;

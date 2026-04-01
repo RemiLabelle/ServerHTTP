@@ -16,11 +16,12 @@ public abstract class Message
         _headers.TryAdd("Content-Length", "");
         _headers["Content-Length"] = body.Length.ToString();
 
-
         _httpVersion = httpVersion;
     }
 
-    public virtual byte[] GetMessage()
+    public abstract byte[] GetMessage();
+
+    public virtual byte[] GetHeadersBody()
     {
         MemoryStream stream = new();
         foreach (var (name, value) in _headers)
