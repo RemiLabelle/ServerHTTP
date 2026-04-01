@@ -82,7 +82,7 @@ public class Response : Message
 
         public override Response Build()
         {
-            return new Response(_headers, _body, _httpVersion, _statusCode, _reasonPhrase ?? "OK");
+            return new Response(_headers, _body, _httpVersion, _statusCode, _reasonPhrase ?? NetworkUtils.GetDefaultReasonPhrase(_statusCode));
         }
     }
 }
