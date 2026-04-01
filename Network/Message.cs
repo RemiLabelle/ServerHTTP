@@ -70,6 +70,36 @@ public abstract class Message
             _httpVersion = message.HttpVersion;
         }
 
+        public TBuilder SetHeaderHost(string value)
+        {
+            string name = "Host";
+            if (!_headers.ContainsKey(value))
+                _headers.Add(name, value);
+            else
+                _headers[name] = value;
+            return (TBuilder)this;
+        }
+
+        public TBuilder SetHeaderContentType(string value)
+        {
+            string name = "Content-Type";
+            if (!_headers.ContainsKey(value))
+                _headers.Add(name, value);
+            else
+                _headers[name] = value;
+            return (TBuilder)this;
+        }
+
+        public TBuilder SetHeaderServer(string value)
+        {
+            string name = "Server";
+            if (!_headers.ContainsKey(value))
+                _headers.Add(name, value);
+            else
+                _headers[name] = value;
+            return (TBuilder)this;
+        }
+
         public TBuilder AddHeader(string name, string value)
         {
             _headers.Add(name, value);
