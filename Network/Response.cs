@@ -82,24 +82,24 @@ public class Response : Message
     }
 
 
-    public class ResponseBuilder : Builder<ResponseBuilder, Response>
+    public class Builder : Message.Builder<Builder, Response>
     {
         protected int _statusCode = 200;
         protected string? _reasonPhrase;
 
-        public ResponseBuilder SetStatusCode(int statusCode)
+        public Builder SetStatusCode(int statusCode)
         {
             _statusCode = statusCode;
             return this;
         }
 
-        public ResponseBuilder SetReasonPhrase(string reasonPhrase)
+        public Builder SetReasonPhrase(string reasonPhrase)
         {
             _reasonPhrase = reasonPhrase;
             return this;
         }
 
-        public override ResponseBuilder Reset()
+        public override Builder Reset()
         {
             _statusCode = 200;
             _reasonPhrase = null;

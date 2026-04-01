@@ -78,24 +78,24 @@ public class Request : Message
         return true;
     }
 
-    public class RequestBuilder : Builder<RequestBuilder, Request>
+    public class Builder : Message.Builder<Builder, Request>
     {
         protected string? _method;
         protected string? _path;
 
-        public RequestBuilder SetMethod(string method)
+        public Builder SetMethod(string method)
         {
             _method = method;
             return this;
         }
 
-        public RequestBuilder SetPath(string path)
+        public Builder SetPath(string path)
         {
             _path = path;
             return this;
         }
 
-        public override RequestBuilder Reset()
+        public override Builder Reset()
         {
             _method = null;
             _path = null;
