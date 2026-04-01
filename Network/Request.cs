@@ -2,11 +2,11 @@
 
 public class Request : Message
 {
-    private string _method;
-    private string _path;
-    private string _httpVersion;
+    private readonly string _method;
+    private readonly string _path;
+    private readonly string _httpVersion;
 
-    public Request(string method, string path, Dictionary<string, string> headers, byte[] body, string httpVersion = "HTTP/1.1")
+    public Request(Dictionary<string, string> headers, byte[] body, string method, string path, string httpVersion = "HTTP/1.1")
         : base(headers, body)
     {
         _method = method;
@@ -18,13 +18,11 @@ public class Request : Message
     public string Path => _path;
     public string HttpVersion => _httpVersion;
 
-    public class RequestBuilder
+    public class RequestBuilder : MessageBuilder<RequestBuilder, Request>
     {
-        private string? _method;
-        private string? _path;
-        private string? _httpVersion;
-        private Dictionary<string, string> _headers = new();
-        private byte[] _body = [];
+        protected string? _method;
+        protected string? _path;
+        protected string? _httpVersion;
 
         public RequestBuilder SetMethod(string method)
         {
@@ -44,38 +42,17 @@ public class Request : Message
             return this;
         }
 
-        public RequestBuilder AddHeader(string name, string value)
-        {
-            _headers.Add(name, value);
-            return this;
-        }
-
-        public RequestBuilder SetBody(byte[] body)
-        {
-            _body = body;
-            return this;
-        }
-
-        public RequestBuilder AddToBody(byte[] body)
-        {
-            _body = [.. _body, .. body];
-            return this;
-        }
-
-        public RequestBuilder Cleanup()
+        public override RequestBuilder Reset()
         {
             _method = null;
             _path = null;
             _httpVersion = null;
-            _headers = new();
-            _body = [];
-
-            return this;
+            return base.Reset();
         }
 
-        public Request Build()
+        public override Request Build()
         {
-            return new(_method ?? "GET", _path ?? "/", _headers, _body, _httpVersion ?? "HTTP/1.1");
+            return new(_headers, _body, _method ?? "GET", _path ?? "/", _httpVersion ?? "HTTP/1.1");
         }
     }
 }
