@@ -4,8 +4,8 @@ namespace Network;
 
 public class Response : Message
 {
-    private int _statusCode;
-    private string _reasonPhrase;
+    private readonly int _statusCode;
+    private readonly string _reasonPhrase;
 
     public Response(Dictionary<string, string> headers, byte[] body, string httpVersion, int statusCode, string reasonPhrase)
         : base(headers, body, httpVersion)
