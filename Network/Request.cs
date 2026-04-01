@@ -83,7 +83,7 @@ public class Request : Message
 
         public override Request Build()
         {
-            return new(_headers, _body, _method ?? "GET", _path ?? "/", _httpVersion ?? "HTTP/1.1");
+            return new(_headers, _body, _httpVersion, _method ?? "GET", _path ?? "/");
         }
     }
 }
