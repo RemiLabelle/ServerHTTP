@@ -11,9 +11,9 @@ public class Request : Message
     public Request(Dictionary<string, string> headers, byte[] body, string method, string path, string httpVersion = "HTTP/1.1")
         : base(headers, body)
     {
-        _method = method;
-        _path = path;
-        _httpVersion = httpVersion;
+        _method = method.Trim();
+        _path = path.Trim();
+        _httpVersion = httpVersion.Trim();
     }
 
     public override byte[] GetMessage()

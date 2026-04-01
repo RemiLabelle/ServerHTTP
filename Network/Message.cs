@@ -9,6 +9,8 @@ public abstract class Message
 
     public Message(Dictionary<string, string> headers, byte[] body)
     {
+        foreach (var (name, value) in headers)
+            headers[name] = value.Trim();
         _headers = headers;
         _body = body;
     }
