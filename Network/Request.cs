@@ -6,26 +6,23 @@ public class Request : Message
 {
     private readonly string _method;
     private readonly string _path;
-    private readonly string _httpVersion;
 
-    public Request(Dictionary<string, string> headers, byte[] body, string method, string path, string httpVersion = "HTTP/1.1")
-        : base(headers, body)
+    public Request(Dictionary<string, string> headers, byte[] body, string httpVersion, string method, string path)
+        : base(headers, body, httpVersion)
     {
-        _method = method.Trim();
-        _path = path.Trim();
-        _httpVersion = httpVersion.Trim();
+        _method = method;
+        _path = path;
     }
 
     public override byte[] GetMessage()
     {
-        string requestLine = $"{_method} {_path} {_httpVersion}\r\n";
+        string requestLine = $"{_method} {_path} {FormatedHttpVersion}\r\n";
 
         return [.. Encoding.UTF8.GetBytes(requestLine), .. base.GetMessage()];
     }
 
     public string Method => _method;
     public string Path => _path;
-    public string HttpVersion => _httpVersion;
 
     public static bool TryParse(string input, out Request? result)
     {
@@ -77,15 +74,14 @@ public class Request : Message
             headers.Add(nameValue[0], nameValue[1]);
         }
 
-        result = new Request(headers, Encoding.UTF8.GetBytes(body), method, path, httpVersion);
+        result = new Request(headers, Encoding.UTF8.GetBytes(body), httpVersion, method, path);
         return true;
     }
 
-    public class RequestBuilder : MessageBuilder<RequestBuilder, Request>
+    public class RequestBuilder : Builder<RequestBuilder, Request>
     {
         protected string? _method;
         protected string? _path;
-        protected string? _httpVersion;
 
         public RequestBuilder SetMethod(string method)
         {
@@ -99,17 +95,10 @@ public class Request : Message
             return this;
         }
 
-        public RequestBuilder SetHttpVersion(string httpVersion)
-        {
-            _httpVersion = httpVersion;
-            return this;
-        }
-
         public override RequestBuilder Reset()
         {
             _method = null;
             _path = null;
-            _httpVersion = null;
             return base.Reset();
         }
 

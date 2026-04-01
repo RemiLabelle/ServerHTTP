@@ -4,15 +4,20 @@ namespace Network;
 
 public abstract class Message
 {
-    private readonly Dictionary<string, string> _headers = new();
-    private readonly byte[] _body = [];
+    private readonly Dictionary<string, string> _headers;
+    private readonly byte[] _body;
+    private readonly string _httpVersion;
 
-    public Message(Dictionary<string, string> headers, byte[] body)
+    public Message(Dictionary<string, string> headers, byte[] body, string httpVersion)
     {
-        foreach (var (name, value) in headers)
-            headers[name] = value.Trim();
-        _headers = headers;
-        _body = body;
+        _body = (byte[])body.Clone();
+
+        _headers = new(headers, StringComparer.OrdinalIgnoreCase);
+        _headers.TryAdd("Content-Length", "");
+        _headers["Content-Length"] = body.Length.ToString();
+
+
+        _httpVersion = httpVersion;
     }
 
     public virtual byte[] GetMessage()
@@ -24,9 +29,6 @@ public abstract class Message
             stream.Write(Encoding.UTF8.GetBytes(header));
         }
 
-        string contentLengthHeader = $"Content-Length: {_body.Length}\r\n";
-        stream.Write(Encoding.UTF8.GetBytes(contentLengthHeader));
-
         stream.Write(Encoding.UTF8.GetBytes("\r\n"));
 
         stream.Write(_body);
@@ -36,37 +38,56 @@ public abstract class Message
 
     public IReadOnlyDictionary<string, string> Headers => _headers;
     public byte[] Body => (byte[])_body.Clone();
+    public string HttpVersion => _httpVersion;
+    public string FormatedHttpVersion => "HTTP/" + _httpVersion;
 
-    public abstract class MessageBuilder<TMessageBuilder, TMessage>
-        where TMessageBuilder : MessageBuilder<TMessageBuilder, TMessage>
+    public abstract class Builder<TBuilder, TMessage>
+        where TBuilder : Builder<TBuilder, TMessage>
         where TMessage : Message
     {
         protected Dictionary<string, string> _headers = new();
         protected byte[] _body = [];
+        protected string _httpVersion = "1.1";
 
-        public TMessageBuilder AddHeader(string name, string value)
+        public Builder() { }
+
+        public Builder(TMessage message)
+        {
+            _headers = new(message.Headers, StringComparer.OrdinalIgnoreCase);
+            _body = message.Body;
+            _httpVersion = message.HttpVersion;
+        }
+
+        public TBuilder AddHeader(string name, string value)
         {
             _headers.Add(name, value);
-            return (TMessageBuilder)this;
+            return (TBuilder)this;
         }
 
-        public TMessageBuilder SetBody(byte[] body)
+        public TBuilder SetBody(byte[] body)
         {
             _body = body;
-            return (TMessageBuilder)this;
+            return (TBuilder)this;
         }
 
-        public TMessageBuilder AddToBody(byte[] body)
+        public TBuilder AddToBody(byte[] body)
         {
             _body = [.. _body, .. body];
-            return (TMessageBuilder)this;
+            return (TBuilder)this;
         }
-        
-        public virtual TMessageBuilder Reset()
+
+        public TBuilder SetHttpVersion(string httpVersion)
+        {
+            _httpVersion = httpVersion;
+            return (TBuilder)this;
+        }
+
+        public virtual TBuilder Reset()
         {
             _headers.Clear();
             _body = [];
-            return (TMessageBuilder)this;
+            _httpVersion = "1.1";
+            return (TBuilder)this;
         }
 
         public abstract TMessage Build();

@@ -4,25 +4,22 @@ namespace Network;
 
 public class Response : Message
 {
-    private string _httpVersion;
     private int _statusCode;
     private string _reasonPhrase;
 
-    public Response(Dictionary<string, string> headers, byte[] body, int statusCode, string reasonPhrase, string httpVersion = "HTTP/1.1")
-        : base(headers, body)
+    public Response(Dictionary<string, string> headers, byte[] body, string httpVersion, int statusCode, string reasonPhrase)
+        : base(headers, body, httpVersion)
     {
-        _httpVersion = httpVersion.Trim();
         _statusCode = statusCode;
-        _reasonPhrase = reasonPhrase.Trim();
+        _reasonPhrase = reasonPhrase;
     }
 
     public override byte[] GetMessage()
     {
-        string statusLine = $"{_httpVersion} {StatusCode} {_reasonPhrase}\r\n";
+        string statusLine = $"{FormatedHttpVersion} {StatusCode} {_reasonPhrase}\r\n";
         return [.. Encoding.UTF8.GetBytes(statusLine), .. base.GetMessage()];
     }
 
-    public string HttpVersion => _httpVersion;
     public int StatusCode => _statusCode;
     public string ReasonPhrase => _reasonPhrase;
 
@@ -80,22 +77,15 @@ public class Response : Message
             headers.Add(nameValue[0], nameValue[1]);
         }
 
-        result = new Response(headers, Encoding.UTF8.GetBytes(body), statusCode, reasonPhrase, httpVersion);
+        result = new Response(headers, Encoding.UTF8.GetBytes(body), httpVersion, statusCode, reasonPhrase);
         return true;
     }
 
 
-    public class ResponseBuilder : MessageBuilder<ResponseBuilder, Response>
+    public class ResponseBuilder : Builder<ResponseBuilder, Response>
     {
-        protected string _httpVersion = "HTTP/1.1";
         protected int _statusCode = 200;
         protected string? _reasonPhrase;
-
-        public ResponseBuilder SetHttpVersion(string httpVersion)
-        {
-            _httpVersion = httpVersion;
-            return this;
-        }
 
         public ResponseBuilder SetStatusCode(int statusCode)
         {
@@ -119,7 +109,7 @@ public class Response : Message
 
         public override Response Build()
         {
-            return new Response(_headers, _body, _statusCode, _reasonPhrase ?? "OK", _httpVersion);
+            return new Response(_headers, _body, _httpVersion, _statusCode, _reasonPhrase ?? "OK");
         }
     }
 }
