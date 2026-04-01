@@ -1,4 +1,6 @@
-﻿namespace Network;
+﻿using System.Text;
+
+namespace Network;
 
 public abstract class Message
 {
@@ -9,6 +11,25 @@ public abstract class Message
     {
         _headers = headers;
         _body = body;
+    }
+
+    public virtual byte[] GetMessage()
+    {
+        MemoryStream stream = new();
+        foreach (var (name, value) in _headers)
+        {
+            string header = $"{name}: {value}\r\n";
+            stream.Write(Encoding.UTF8.GetBytes(header));
+        }
+
+        string contentLengthHeader = $"Content-Length: {_body.Length}\r\n";
+        stream.Write(Encoding.UTF8.GetBytes(contentLengthHeader));
+
+        stream.Write(Encoding.UTF8.GetBytes("\r\n"));
+
+        stream.Write(_body);
+
+        return stream.ToArray();
     }
 
     public IReadOnlyDictionary<string, string> Headers => _headers;

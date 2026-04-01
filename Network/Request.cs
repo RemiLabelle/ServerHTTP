@@ -1,4 +1,6 @@
-﻿namespace Network;
+﻿using System.Text;
+
+namespace Network;
 
 public class Request : Message
 {
@@ -12,6 +14,13 @@ public class Request : Message
         _method = method;
         _path = path;
         _httpVersion = httpVersion;
+    }
+
+    public override byte[] GetMessage()
+    {
+        string requestLine = $"{_method} {_path} {_httpVersion}\r\n";
+
+        return [.. Encoding.UTF8.GetBytes(requestLine), .. base.GetMessage()];
     }
 
     public string Method => _method;
