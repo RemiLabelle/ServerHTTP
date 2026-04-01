@@ -16,7 +16,7 @@ public class Response : Message
 
     public override byte[] GetMessage()
     {
-        string statusLine = $"{HttpVersion} {StatusCode} {_reasonPhrase}\r\n";
+        string statusLine = $"{HttpVersion} {StatusCode}{(_reasonPhrase == string.Empty ? string.Empty : " " + _reasonPhrase)}\r\n";
         return [.. Encoding.UTF8.GetBytes(statusLine), .. GetHeadersBody()];
     }
 
