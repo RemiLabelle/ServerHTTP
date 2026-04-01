@@ -16,7 +16,7 @@ public class Response : Message
 
     public override byte[] GetMessage()
     {
-        string statusLine = $"{FormatedHttpVersion} {StatusCode} {_reasonPhrase}\r\n";
+        string statusLine = $"{HttpVersion} {StatusCode} {_reasonPhrase}\r\n";
         return [.. Encoding.UTF8.GetBytes(statusLine), .. base.GetMessage()];
     }
 
@@ -101,7 +101,6 @@ public class Response : Message
 
         public override ResponseBuilder Reset()
         {
-            _httpVersion = "HTTP/1.1";
             _statusCode = 200;
             _reasonPhrase = null;
             return base.Reset();

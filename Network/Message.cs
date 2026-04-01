@@ -39,7 +39,6 @@ public abstract class Message
     public IReadOnlyDictionary<string, string> Headers => _headers;
     public byte[] Body => (byte[])_body.Clone();
     public string HttpVersion => _httpVersion;
-    public string FormatedHttpVersion => "HTTP/" + _httpVersion;
 
     public abstract class Builder<TBuilder, TMessage>
         where TBuilder : Builder<TBuilder, TMessage>
@@ -47,7 +46,7 @@ public abstract class Message
     {
         protected Dictionary<string, string> _headers = new();
         protected byte[] _body = [];
-        protected string _httpVersion = "1.1";
+        protected string _httpVersion = "HTTP/1.1";
 
         public Builder() { }
 
@@ -86,7 +85,6 @@ public abstract class Message
         {
             _headers.Clear();
             _body = [];
-            _httpVersion = "1.1";
             return (TBuilder)this;
         }
 

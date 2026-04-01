@@ -16,7 +16,7 @@ public class Request : Message
 
     public override byte[] GetMessage()
     {
-        string requestLine = $"{_method} {_path} {FormatedHttpVersion}\r\n";
+        string requestLine = $"{_method} {_path} {HttpVersion}\r\n";
 
         return [.. Encoding.UTF8.GetBytes(requestLine), .. base.GetMessage()];
     }
