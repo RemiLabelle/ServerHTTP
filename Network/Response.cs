@@ -23,64 +23,38 @@ public class Response : Message
     public int StatusCode => _statusCode;
     public string ReasonPhrase => _reasonPhrase;
 
-    public static bool TryParse(string input, out Response? result)
+    public static Response Parse(string input)
     {
-        string separator = "\r\n";
-        int responseLineIdx = input.IndexOf(separator);
-        if (responseLineIdx == -1)
-        {
-            result = null;
-            return false;
-        }
+        string statusLine = input.Split("\r\n")[0];
+        string headerLines = string.Join("\r\n", input.Split("\r\n\r\n")[0].Split("\r\n")[1..]);
+        string bodyText = string.Join("\r\n\r\n", input.Split("\r\n\r\n")[1..]);
 
-        string responseLine = input.Substring(0, responseLineIdx);
+        string[] requestLineParts = statusLine.Split(' ');
 
-        string[] responseLineParts = responseLine.Split(" ");
+        string httpVersion = requestLineParts[0];
+        int statusCode = int.Parse(requestLineParts[1]);
+        string reasonPhrase = string.Join(" ", requestLineParts[2..]);
 
-        if (responseLineParts.Length < 2)
-        {
-            result = null;
-            return false;
-        }
+        Dictionary<string, string> headers = ParseHeaders(headerLines);
 
-        string httpVersion = responseLineParts[0];
-        if (!int.TryParse(responseLineParts[1], out int statusCode))
-        {
-            result = null;
-            return false;
-        }
-        string reasonPhrase = responseLineParts.Length > 2 ? string.Join(" ", responseLineParts[2..]) : string.Empty;
+        byte[] body = Encoding.UTF8.GetBytes(bodyText);
 
-
-        int headersEndIdx = input.IndexOf(separator + separator);
-        if (headersEndIdx == -1)
-        {
-            result = null;
-            return false;
-        }
-
-        int headerStartIdx = responseLineIdx + separator.Length;
-        string headersLines = input.Substring(headerStartIdx, headersEndIdx - headerStartIdx);
-        int bodyStartIdx = headersEndIdx + separator.Length * 2;
-        string body = input.Substring(bodyStartIdx);
-
-        Dictionary<string, string> headers = new();
-        foreach (string header in headersLines.Split(separator))
-        {
-            string[] nameValue = header.Split(":");
-            if (nameValue.Length != 2)
-            {
-                result = null;
-                return false;
-            }
-
-            headers.Add(nameValue[0], nameValue[1]);
-        }
-
-        result = new Response(headers, Encoding.UTF8.GetBytes(body), httpVersion, statusCode, reasonPhrase);
-        return true;
+        return new Response(headers, body, httpVersion, statusCode, reasonPhrase);
     }
 
+    public static bool TryParse(string input, out Response? result)
+    {
+        try
+        {
+            result = Parse(input);
+            return true;
+        }
+        catch
+        {
+            result = null;
+            return false;
+        }
+    }
 
     public class Builder : Message.Builder<Builder, Response>
     {

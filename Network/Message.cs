@@ -41,6 +41,18 @@ public abstract class Message
     public byte[] Body => (byte[])_body.Clone();
     public string HttpVersion => _httpVersion;
 
+    public static Dictionary<string, string> ParseHeaders(string headersLines)
+    {
+        Dictionary<string, string> headers = new(StringComparer.OrdinalIgnoreCase);
+        foreach (var line in headersLines.Split("\r\n"))
+        {
+            var nameValue = line.Split(":");
+            headers.Add(nameValue[0].Trim(), nameValue[1].Trim());
+        }
+
+        return headers;
+    }
+
     public abstract class Builder<TBuilder, TMessage>
         where TBuilder : Builder<TBuilder, TMessage>
         where TMessage : Message

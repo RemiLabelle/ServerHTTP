@@ -24,58 +24,37 @@ public class Request : Message
     public string Method => _method;
     public string Path => _path;
 
+    public static Request Parse(string input)
+    {
+        string requestLine = input.Split("\r\n")[0];
+        string headerLines = string.Join("\r\n", input.Split("\r\n\r\n")[0].Split("\r\n")[1..]);
+        string bodyText = string.Join("\r\n\r\n", input.Split("\r\n\r\n")[1..]);
+
+        string[] requestLineParts = requestLine.Split(' ');
+
+        string method = requestLineParts[0];
+        string path = requestLineParts[1];
+        string httpVersion = requestLineParts[2];
+
+        Dictionary<string, string> headers = ParseHeaders(headerLines);
+
+        byte[] body = Encoding.UTF8.GetBytes(bodyText);
+
+        return new Request(headers, body, httpVersion, method, path);
+    }
+
     public static bool TryParse(string input, out Request? result)
     {
-        string separator = "\r\n";
-        int requestLineIdx = input.IndexOf(separator);
-        if (requestLineIdx == -1)
+        try
+        {
+            result = Parse(input);
+            return true;
+        }
+        catch
         {
             result = null;
             return false;
         }
-
-        string requestLine = input.Substring(0, requestLineIdx);
-
-        string[] requestLineparts = requestLine.Split(" ");
-
-        if (requestLineparts.Length != 3)
-        {
-            result = null;
-            return false;
-        }
-
-        string method = requestLineparts[0];
-        string path = requestLineparts[1];
-        string httpVersion = requestLineparts[2];
-
-
-        int headersEndIdx = input.IndexOf(separator + separator);
-        if (headersEndIdx == -1)
-        {
-            result = null;
-            return false;
-        }
-
-        int headerStartIdx = requestLineIdx + separator.Length;
-        string headersLines = input.Substring(headerStartIdx, headersEndIdx - headerStartIdx);
-        int bodyStartIdx = headersEndIdx + separator.Length * 2;
-        string body = input.Substring(bodyStartIdx);
-
-        Dictionary<string, string> headers = new();
-        foreach (string header in headersLines.Split(separator))
-        {
-            string[] nameValue = header.Split(":");
-            if (nameValue.Length != 2)
-            {
-                result = null;
-                return false;
-            }
-
-            headers.Add(nameValue[0], nameValue[1]);
-        }
-
-        result = new Request(headers, Encoding.UTF8.GetBytes(body), httpVersion, method, path);
-        return true;
     }
 
     public class Builder : Message.Builder<Builder, Request>
