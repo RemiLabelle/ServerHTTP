@@ -44,23 +44,22 @@ public class Router
         AddRoute("POST", path, handler);
     }
 
-    public async Task<Response> HandleRequest(Request request)
+    public async Task<Response> HandleRequest(RequestContext requestContext)
     {
-        if (!_routes.TryGetValue(request.Path, out var methods))
+        if (!_routes.TryGetValue(requestContext.Request.Path, out var methods))
             return new Response.Builder()
                 .SetStatusCode(404)
                 .Build();
-        if (!methods.TryGetValue(request.Method, out Route? route))
+        if (!methods.TryGetValue(requestContext.Request.Method, out Route? route))
             return new Response.Builder()
                 .SetStatusCode(404)
                 .Build();
-
 
         Handler pipeline = Middlewares.BuildHandler(route.GetHandler());
 
         try
         {
-            return await pipeline(request);
+            return await pipeline(requestContext);
         }
         catch
         {

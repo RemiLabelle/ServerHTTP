@@ -5,8 +5,8 @@ namespace Network.Routing;
 
 public class MiddlewarePipeline
 {
-    public delegate Task<Response> Handler(Request request);
-    public delegate Task<Response> Middleware(Request request, Handler next);
+    public delegate Task<Response> Handler(RequestContext requestContext);
+    public delegate Task<Response> Middleware(RequestContext requestContext, Handler next);
 
     private List<Middleware> _middlewares = new();
 

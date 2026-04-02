@@ -1,8 +1,9 @@
 ﻿using Network.HttpMessages;
+using Network.Routing;
 
 namespace Network.Handlers;
 
 public interface IHandler
 {
-    public Task<Response> Handle(Request request);
+    public Task<Response> Handle(RequestContext requestContext);
 }
