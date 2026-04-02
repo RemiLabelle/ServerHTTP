@@ -19,6 +19,31 @@ public class Router
         methods.Add(method, route);
     }
 
+    public void AddRoute(string method, string path, Handler handler)
+    {
+        AddRoute(method, path, new Route(handler));
+    }
+
+    public void AddGet(string path, Route route)
+    {
+        AddRoute("GET", path, route);
+    }
+
+    public void AddGet(string path, Handler handler)
+    {
+        AddRoute("GET", path, handler);
+    }
+
+    public void AddPost(string path, Route route)
+    {
+        AddRoute("POST", path, route);
+    }
+
+    public void AddPost(string path, Handler handler)
+    {
+        AddRoute("POST", path, handler);
+    }
+
     public async Task<Response> HandleRequest(Request request)
     {
         if (!_routes.TryGetValue(request.Path, out var methods))
