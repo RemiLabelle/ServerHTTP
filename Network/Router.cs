@@ -1,12 +1,10 @@
-﻿namespace Network;
+﻿using static Network.MiddlewarePipeline;
+
+namespace Network;
 
 public class Router
 {
-    public delegate Task<Response> Handler(Request request);
-    public delegate Task<Response> Middleware(Request request, Handler next);
-
     private Dictionary<string, Dictionary<string, Route>> _routes = new(StringComparer.OrdinalIgnoreCase);
-    private List<Middleware> _middlewares = new();
 
     public void AddRoute(string method, string path, Route route)
     {
@@ -18,11 +16,6 @@ public class Router
         }
 
         methods.Add(method, route);
-    }
-
-    public void AddMiddleware(Middleware middleware)
-    {
-        _middlewares.Add(middleware);
     }
 
     public async Task<Response> HandleRequest(Request request)
@@ -37,16 +30,10 @@ public class Router
                 .Build();
 
 
-        Handler pipeline = route.GetHandler();
-
-        for (int i = _middlewares.Count - 1; i >= 0; i--)
-        {
-            Middleware currentMiddleware = _middlewares[i];
-            Handler next = pipeline;
-
-            pipeline = (request) => currentMiddleware(request, next);
-        }
+        Handler pipeline = Middlewares.BuildHandler(route.GetHandler());
 
         return await pipeline(request);
     }
+
+    public MiddlewarePipeline Middlewares { get; private set; } = new();
 }
