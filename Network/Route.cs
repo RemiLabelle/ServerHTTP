@@ -11,6 +11,11 @@ public class Route
         _handler = handler;
     }
 
+    public Route(IHandler handler)
+    {
+        _handler = handler.Handle;
+    }
+
     public Handler GetHandler()
     {
         return Middlewares.BuildHandler(_handler);

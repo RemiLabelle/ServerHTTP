@@ -12,6 +12,11 @@ public class MiddlewarePipeline
         _middlewares.Add(middleware);
     }
 
+    public void AddMiddleware(IMiddleware middleware)
+    {
+        _middlewares.Add(middleware.Handle);
+    }
+
     public Handler BuildHandler(Handler final)
     {
         Handler pipeline = final;
