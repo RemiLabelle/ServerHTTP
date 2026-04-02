@@ -58,7 +58,16 @@ public class Router
 
         Handler pipeline = Middlewares.BuildHandler(route.GetHandler());
 
-        return await pipeline(request);
+        try
+        {
+            return await pipeline(request);
+        }
+        catch
+        {
+            return new Response.Builder()
+                .SetStatusCode(500)
+                .Build();
+        }
     }
 
     public MiddlewarePipeline Middlewares { get; private set; } = new();
