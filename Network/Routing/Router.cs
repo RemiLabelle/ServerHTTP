@@ -1,6 +1,7 @@
-﻿using static Network.MiddlewarePipeline;
+﻿using Network.HttpMessages;
+using static Network.Routing.MiddlewarePipeline;
 
-namespace Network;
+namespace Network.Routing;
 
 public class Router
 {

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Network;
+namespace Network.HttpMessages;
 
 public class Request : Message
 {

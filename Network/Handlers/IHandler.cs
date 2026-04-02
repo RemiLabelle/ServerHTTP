@@ -1,4 +1,6 @@
-﻿namespace Network;
+﻿using Network.HttpMessages;
+
+namespace Network.Handlers;
 
 public interface IHandler
 {

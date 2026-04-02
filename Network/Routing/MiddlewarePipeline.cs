@@ -1,4 +1,7 @@
-﻿namespace Network;
+﻿using Network.HttpMessages;
+using Network.Middlewares;
+
+namespace Network.Routing;
 
 public class MiddlewarePipeline
 {

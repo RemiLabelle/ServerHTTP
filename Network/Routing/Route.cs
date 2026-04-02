@@ -1,6 +1,7 @@
-﻿using static Network.MiddlewarePipeline;
+﻿using Network.Handlers;
+using static Network.Routing.MiddlewarePipeline;
 
-namespace Network;
+namespace Network.Routing;
 
 public class Route
 {
