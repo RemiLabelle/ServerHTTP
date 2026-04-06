@@ -5,5 +5,19 @@ namespace Network.Handlers;
 
 public interface IHandler
 {
-    public Task<Response> Handle(RequestContext requestContext);
+    public delegate Task<Response> Handler(RequestContext requestContext);
+
+    public async sealed Task<Response> Handle(RequestContext requestContext)
+    {
+        return await GetHandler()(requestContext);
+    }
+
+    public Handler GetHandler();
+
+    public static IHandler From(Handler handler) => new SimpleHandler(handler);
+
+    public class SimpleHandler(Handler handler) : IHandler
+    {
+        public Handler GetHandler() => handler;
+    }
 }

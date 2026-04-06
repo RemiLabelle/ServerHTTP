@@ -1,9 +1,9 @@
 ﻿using Network.Handlers;
-using static Network.Routing.MiddlewarePipeline;
+using static Network.Handlers.IHandler;
 
 namespace Network.Routing;
 
-public class Route
+public class Route : IHandler
 {
     private Handler _handler;
     
