@@ -9,7 +9,7 @@ public class Router : IHandler
 {
     private List<(Regex, Dictionary<string, IHandler>)> _routes = new();
 
-    public void AddRoute(string method, Regex path, IHandler handler)
+    public Router AddRoute(string method, Regex path, IHandler handler)
     {
         string prefix = Regex.Replace(path.ToString(), @"[.*+?^${}()|[\]\\]", "");
         if (prefix[prefix.Length - 1] != '/')
@@ -18,36 +18,37 @@ public class Router : IHandler
         _routes.Add((path, methods));
 
         methods.Add(method, handler);
+        return this;
     }
 
-    public void AddRoute(string method, string path, IHandler handler)
+    public Router AddRoute(string method, string path, IHandler handler)
     {
-        AddRoute(method, new Regex("^" + path), handler);
+        return AddRoute(method, new Regex("^" + path), handler);
     }
 
-    public void AddRoute(string method, string path, Handler handler)
+    public Router AddRoute(string method, string path, Handler handler)
     {
-        AddRoute(method, path, IHandler.From(handler));
+        return AddRoute(method, path, IHandler.From(handler));
     }
 
-    public void AddGet(string path, IHandler handler)
+    public Router AddGet(string path, IHandler handler)
     {
-        AddRoute("GET", path, handler);
+        return AddRoute("GET", path, handler);
     }
 
-    public void AddPost(string path, IHandler handler)
+    public Router AddPost(string path, IHandler handler)
     {
-        AddRoute("POST", path, handler);
+        return AddRoute("POST", path, handler);
     }
 
-    public void AddGet(string path, Handler handler)
+    public Router AddGet(string path, Handler handler)
     {
-        AddRoute("GET", path, handler);
+        return AddRoute("GET", path, handler);
     }
 
-    public void AddPost(string path, Handler handler)
+    public Router AddPost(string path, Handler handler)
     {
-        AddRoute("POST", path, handler);
+        return AddRoute("POST", path, handler);
     }
 
     public Handler GetHandler()
