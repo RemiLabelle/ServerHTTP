@@ -58,7 +58,9 @@ public class Router : IHandler
             string? prefix = null;
             foreach ((Regex pathPattern, Dictionary<string, IHandler> currentMethods) in _routes)
             {
-                Match match = pathPattern.Match(requestContext.Request.Path);
+                string path = requestContext.Request.Path;
+                string previousPrefix = requestContext.Prefix;
+                Match match = pathPattern.Match(path[(previousPrefix.Length - 1)..]);
                 if (match.Success)
                 {
                     methods = currentMethods;
