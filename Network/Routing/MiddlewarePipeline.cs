@@ -1,13 +1,11 @@
-﻿using Network.HttpMessages;
-using Network.Middlewares;
+﻿using Network.Middlewares;
+using static Network.Handlers.IHandler;
+using static Network.Middlewares.IMiddleware;
 
 namespace Network.Routing;
 
 public class MiddlewarePipeline
 {
-    public delegate Task<Response> Handler(RequestContext requestContext);
-    public delegate Task<Response> Middleware(RequestContext requestContext, Handler next);
-
     private List<Middleware> _middlewares = new();
 
     public void AddMiddleware(Middleware middleware)
