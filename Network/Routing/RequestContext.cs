@@ -53,7 +53,7 @@ public class RequestContext
 
         public RequestContext Build()
         {
-            return new RequestContext(_request ?? new Request.Builder().Build(), _prefix ?? "");
+            return new RequestContext(_request ?? new Request.Builder().Build(), _prefix ?? "/");
         }
     }
 }
