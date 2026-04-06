@@ -81,7 +81,7 @@ public class Router : IHandler
                     .Build();
 
             RequestContext newRequestContext = new RequestContext.Builder(requestContext)
-                .AppendToPrefix(prefix)
+                .AppendToPrefix(prefix[1..])
                 .Build();
 
             Handler pipeline = Middlewares.BuildHandler(route.GetHandler());
