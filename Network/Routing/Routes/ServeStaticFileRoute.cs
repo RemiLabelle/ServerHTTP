@@ -1,5 +1,5 @@
 ﻿using Network.Handlers;
-using static Network.Routing.MiddlewarePipeline;
+using static Network.Handlers.IHandler;
 
 namespace Network.Routing.Routes;
 
@@ -12,7 +12,7 @@ public class ServeStaticFileRoute : Route
     {
         ServeStaticFileHandler serveStaticFileHandler = new(Path.GetFullPath(relativePath));
 
-        Handler handler = serveStaticFileHandler.Handle;
+        Handler handler = serveStaticFileHandler.GetHandler();
         return handler;
     }
 }
