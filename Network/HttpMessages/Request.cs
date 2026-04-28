@@ -21,6 +21,24 @@ public class Request : Message
         return [.. Encoding.UTF8.GetBytes(requestLine), .. GetHeadersBody()];
     }
 
+    public Dictionary<string, string> Cookies()
+    {
+        if (!Headers.TryGetValue("Cookie", out string? rawCookies))
+            return new Dictionary<string, string>();
+
+        Dictionary<string, string> cookies = new();
+
+        foreach (string cookie in rawCookies.Split(";"))
+        {
+            string[] cookieParts = cookie.Split('=');
+            if (cookieParts.Length < 2)
+                continue;
+            cookies.Add(cookieParts[0], cookieParts[1]);
+        }
+
+        return cookies;
+    }
+
     public string Method => _method;
     public string Path => _path;
 
