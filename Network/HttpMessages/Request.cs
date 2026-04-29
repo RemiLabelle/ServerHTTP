@@ -39,6 +39,25 @@ public class Request : Message
         return cookies;
     }
 
+    public Dictionary<string, string> GetParams()
+    {
+        string[] pathParts = Path.Split("?");
+        if (pathParts.Length < 2)
+            return new Dictionary<string, string>();
+        string[] allParams = pathParts[1].Split("&");
+
+        Dictionary<string, string> keyValueParams = new();
+        foreach (string param in allParams)
+        {
+            string[] paramParts = param.Split("=");
+            if (paramParts.Length == 2)
+                continue;
+            keyValueParams.TryAdd(paramParts[0], paramParts[1]);
+        }
+
+        return keyValueParams;
+    }
+
     public string Method => _method;
     public string Path => _path;
 
