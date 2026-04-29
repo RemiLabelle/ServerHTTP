@@ -19,12 +19,28 @@ public class AuthMiddleware : IMiddleware
     public Task<Response> Handle(RequestContext requestContext, Handler next)
     {
         Dictionary<string, string> cookies = requestContext.Request.Cookies();
-        if (!cookies.TryGetValue(COOKIE_KEY_NAME, out string? token))
+        if (!cookies.TryGetValue(COOKIE_KEY_NAME, out string? tokenString))
             return Task.FromResult(
                 new Response.Builder()
                 .SetStatusCode(401)
                 .Build()
             );
-        return next(requestContext);
+
+        Token token = new(tokenString);
+
+        User? user = _database.GetUserFromToken(token);
+
+        if (user == null)
+            return Task.FromResult(
+                new Response.Builder()
+                .SetStatusCode(401)
+                .Build()
+            );
+
+        RequestContext newRequestContext = new RequestContext.Builder(requestContext)
+            .AddToMetadata("user", user)
+            .Build();
+
+        return next(newRequestContext);
     }
 }

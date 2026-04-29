@@ -55,7 +55,7 @@ public class RequestContext
             return this;
         }
 
-        public Builder AddToMetadatas(string key, object value)
+        public Builder AddToMetadata(string key, object value)
         {
             _metadata.Add(key, value);
             return this;

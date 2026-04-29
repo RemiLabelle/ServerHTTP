@@ -29,7 +29,7 @@ public class AuthDatabase
         return true;
     }
 
-    public User? GetUserWithToken(Token authToken)
+    public User? GetUserFromToken(Token authToken)
     {
         foreach (var token in _tokens)
         {
