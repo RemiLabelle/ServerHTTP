@@ -30,7 +30,10 @@ public class GetPublicationsHandler : IHandler
                 publications = _database.All();
             }
 
-            string jsonResponse = JsonSerializer.Serialize(publications);
+            string jsonResponse = JsonSerializer.Serialize(publications, options: new()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            });
             return new Response.Builder()
                 .SetStatusCode(200)
                 .SetHeaderContentType("application/json")

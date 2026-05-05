@@ -33,7 +33,7 @@ public class Request : Message
             string[] cookieParts = cookie.Split('=');
             if (cookieParts.Length < 2)
                 continue;
-            cookies.Add(cookieParts[0], cookieParts[1]);
+            cookies.Add(cookieParts[0], cookie.Substring(cookieParts[0].Length + 1));
         }
 
         return cookies;

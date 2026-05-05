@@ -31,7 +31,10 @@ public class CreatePublicationHandler : IHandler
             RequestPayload? payload;
             try
             {
-                payload = JsonSerializer.Deserialize<RequestPayload>(requestContext.Request.Body);
+                payload = JsonSerializer.Deserialize<RequestPayload>(requestContext.Request.Body, options: new()
+                {
+                    PropertyNameCaseInsensitive = true
+                });
             }
             catch (JsonException)
             {
@@ -40,7 +43,9 @@ public class CreatePublicationHandler : IHandler
                     .Build();
             }
 
-            if (payload == null)
+            if (payload == null
+             || payload.Title == null
+             || payload.Content == null)
             {
                 return new Response.Builder()
                     .SetStatusCode(400)
@@ -49,7 +54,10 @@ public class CreatePublicationHandler : IHandler
 
             Publication.Publication publication = _database.AddPublication(user.Name, payload.Title, payload.Content);
 
-            string jsonResponse = JsonSerializer.Serialize(publication);
+            string jsonResponse = JsonSerializer.Serialize(publication, options: new()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            });
             return new Response.Builder()
                 .SetStatusCode(201)
                 .SetHeaderContentType("application/json")

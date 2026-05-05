@@ -10,7 +10,11 @@ public class AuthDatabase
         foreach (var user in _users)
         {
             if (user.Name == username && user.Password == password)
-                return Token.GenerateRandomToken();
+            {
+                Token token = Token.GenerateRandomToken();
+                _tokens.Add(token, user);
+                return token;
+            }
         }
 
         return null;

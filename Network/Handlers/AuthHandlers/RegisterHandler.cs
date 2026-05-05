@@ -1,15 +1,16 @@
 ﻿using Network.Auth;
 using Network.HttpMessages;
 using Network.Middlewares;
+using System.Text;
 using System.Text.Json;
 
-namespace Network.Handlers;
+namespace Network.Handlers.AuthHandlers;
 
-public class LoginHandler : IHandler
+public class RegisterHandler : IHandler
 {
     private AuthDatabase _database;
 
-    public LoginHandler(AuthDatabase database)
+    public RegisterHandler(AuthDatabase database)
     {
         _database = database;
     }
@@ -21,7 +22,10 @@ public class LoginHandler : IHandler
             RequestPayload? payload;
             try
             {
-                payload = JsonSerializer.Deserialize<RequestPayload>(requestContext.Request.Body);
+                payload = JsonSerializer.Deserialize<RequestPayload>(requestContext.Request.Body, options: new()
+                {
+                    PropertyNameCaseInsensitive = true
+                });
             }
             catch (JsonException)
             {
@@ -30,25 +34,28 @@ public class LoginHandler : IHandler
                     .Build();
             }
 
-            if (payload == null)
+            if (payload == null
+             || payload.Username == null
+             || payload.Password == null)
             {
                 return new Response.Builder()
                     .SetStatusCode(400)
                     .Build();
             }
 
-            Token? token = _database.Authenticate(payload.Username, payload.Password);
+            bool success = _database.Register(payload.Username, payload.Password);
 
-            if (token == null)
+            if (!success)
             {
                 return new Response.Builder()
-                    .SetStatusCode(401)
+                    .SetStatusCode(400)
                     .Build();
             }
 
             return new Response.Builder()
-                .SetStatusCode(200)
-                .AddHeader("Set-Cookie", $"{AuthMiddleware.COOKIE_KEY_NAME}={token.value}; HttpOnly")
+                .SetStatusCode(201)
+                .SetHeaderContentType("application/json")
+                .SetBody(Encoding.UTF8.GetBytes(@"{""message"": ""Création d'un utilisateur avec succès.""}"))
                 .Build();
         };
     }

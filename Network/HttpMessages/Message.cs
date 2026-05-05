@@ -37,6 +37,11 @@ public abstract class Message
         return stream.ToArray();
     }
 
+    public override string ToString()
+    {
+        return Encoding.UTF8.GetString(GetMessage());
+    }
+
     public IReadOnlyDictionary<string, string> Headers => _headers;
     public byte[] Body => (byte[])_body.Clone();
     public string HttpVersion => _httpVersion;
