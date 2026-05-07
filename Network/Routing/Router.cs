@@ -14,6 +14,16 @@ public class Router : IHandler
         string prefix = Regex.Replace(path.ToString(), @"[.*+?^${}()|[\]\\]", "");
         if (prefix[prefix.Length - 1] != '/')
             throw new ArgumentException("Path must end with a '/' character", nameof(path));
+
+        foreach (var route in _routes)
+        {
+            if (route.Item1.ToString().Equals(path.ToString()))
+            {
+                route.Item2.Add(method, handler);
+                return this;
+            }
+        }
+
         Dictionary<string, IHandler> methods = new(StringComparer.OrdinalIgnoreCase);
         _routes.Add((path, methods));
 
