@@ -7,19 +7,30 @@ namespace Network.Middlewares
 {
     public class CompressionMiddleware : IMiddleware
     {
-        private static async Task<byte[]> HandleCompression<T>(byte[] body, CompressionMode direction) where T : Stream, new()
-        {
-            using MemoryStream outputStream = new();
-            using T compressor = new();
+        private delegate Stream CompressionStream(Stream output, CompressionMode direction);
 
+        private static readonly Dictionary<string, CompressionStream> _streamGenerator = new()
+        {
+            { "gzip", (compressor, direction) => new GZipStream(compressor, direction) },
+            { "br", (compressor, direction) => new BrotliStream(compressor, direction) }
+        };
+
+        private static async Task<byte[]> HandleCompression(byte[] body, CompressionStream streamBuilder, CompressionMode direction) 
+        {
+            using MemoryStream output = new();
+
+            await using Stream compressor = streamBuilder(output, direction);
             await compressor.WriteAsync(body);
-            return outputStream.ToArray();
+
+            return output.ToArray();
         }
 
         public async Task<Response> Handle(RequestContext requestContext, Handler next)
         {
             //decompress as request
 
+
+            Response response = await next(requestContext);
 
             //compress as response
             if (requestContext.Request.Headers.TryGetValue("Content-Encoding", out string? encoding))
@@ -35,7 +46,7 @@ namespace Network.Middlewares
                 .Build();
             }
 
-            return await next(requestContext);
+            return response;
         }
     }
 }
