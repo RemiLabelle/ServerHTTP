@@ -21,6 +21,43 @@ public class Request : Message
         return [.. Encoding.UTF8.GetBytes(requestLine), .. GetHeadersBody()];
     }
 
+    public Dictionary<string, string> Cookies()
+    {
+        if (!Headers.TryGetValue("Cookie", out string? rawCookies))
+            return new Dictionary<string, string>();
+
+        Dictionary<string, string> cookies = new();
+
+        foreach (string cookie in rawCookies.Split(";"))
+        {
+            string[] cookieParts = cookie.Split('=');
+            if (cookieParts.Length < 2)
+                continue;
+            cookies.Add(cookieParts[0], cookie.Substring(cookieParts[0].Length + 1));
+        }
+
+        return cookies;
+    }
+
+    public Dictionary<string, string> GetParams()
+    {
+        string[] pathParts = Path.Split("?");
+        if (pathParts.Length < 2)
+            return new Dictionary<string, string>();
+        string[] allParams = pathParts[1].Split("&");
+
+        Dictionary<string, string> keyValueParams = new();
+        foreach (string param in allParams)
+        {
+            string[] paramParts = param.Split("=");
+            if (paramParts.Length == 2)
+                continue;
+            keyValueParams.TryAdd(paramParts[0], paramParts[1]);
+        }
+
+        return keyValueParams;
+    }
+
     public string Method => _method;
     public string Path => _path;
 
