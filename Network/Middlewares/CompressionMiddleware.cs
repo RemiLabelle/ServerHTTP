@@ -1,5 +1,8 @@
 ﻿using Network.HttpMessages;
 using Network.Routing;
+using static Network.NetworkUtils;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Text;
 using static Network.Handlers.IHandler;
@@ -8,8 +11,6 @@ namespace Network.Middlewares
 {
     public class CompressionMiddleware : IMiddleware
     {
-        private delegate Stream GenerateCompressionStream(Stream output, CompressionMode direction);
-
         private static readonly Dictionary<string, GenerateCompressionStream> _streamGenerator = new()
         {
             { "gzip", (compressor, direction) => new GZipStream(compressor, direction) },
@@ -17,43 +18,6 @@ namespace Network.Middlewares
             { "deflate", (compressor, direction) => new DeflateStream(compressor, direction) },
             { "zlib", (compressor, direction) => new ZLibStream(compressor, direction) }
         };
-
-        private static async Task<byte[]> HandleCompressionAsync(byte[] body, GenerateCompressionStream streamBuilder, CompressionMode direction) 
-        {
-            using MemoryStream output = new();
-
-            await using Stream compressor = streamBuilder(output, direction);
-            await compressor.WriteAsync(body);
-
-            return output.ToArray();
-        }
-
-        private static async Task<byte[]> OrganizeResponseBodyAsync(byte[] chunkedBody)
-        {
-            using MemoryStream memStream = new();
-            int index = 0;
-            while (index < chunkedBody.Length)
-            {
-                int chunkSizeEnd = Array.IndexOf(chunkedBody, (byte)'\r', index);
-                if (chunkSizeEnd == -1)
-                    break;
-
-                string chunkSizeHex = Encoding.UTF8.GetString(chunkedBody, index, chunkSizeEnd - index);
-
-                if (!int.TryParse(chunkSizeHex, System.Globalization.NumberStyles.HexNumber, null, out int chunkSize) || chunkSize == 0)
-                {
-                    Console.WriteLine("Parsing error - Failed to obtain chunk size.");
-                    break;
-                }
-
-                index = chunkSizeEnd + 2;
-                await memStream.WriteAsync(chunkedBody.AsMemory(index, chunkSize));
-
-                index += chunkSize + 2;
-            }
-
-            return memStream.ToArray();
-        }
 
         public async Task<Response> Handle(RequestContext requestContext, Handler next)
         {
@@ -63,7 +27,7 @@ namespace Network.Middlewares
             if (requestContext.Request.Headers.TryGetValue("Transfer-Encoding", out string? transfer)
                 && transfer.Contains("chunked"))
             {
-                body = await OrganizeResponseBodyAsync(body);
+                body = await OrganizeBodyAsync(body);
             }
 
             //decode compressed request
@@ -82,7 +46,20 @@ namespace Network.Middlewares
                 )
                 .Build();
 
-            return await next(requestContext);
+            Response response = await next(requestContext);
+
+            //compress response before forwarding
+            if (requestContext.Request.Headers.TryGetValue("Accept-Encoding", out encoding)
+                && _streamGenerator.TryGetValue(encoding, out streamBuilder))
+            {
+                byte[] compressedBody = await HandleCompressionAsync(response.Body, streamBuilder, CompressionMode.Compress);
+                response = new Response.Builder(response)
+                    .SetBody(compressedBody)
+                    .AddHeader("Content-Encoding", encoding)
+                    .Build();
+            }
+
+            return response;
         }
     }
 }

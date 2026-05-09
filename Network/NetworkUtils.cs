@@ -1,4 +1,7 @@
-﻿namespace Network;
+﻿using System.IO.Compression;
+using System.Text;
+
+namespace Network;
 
 internal class NetworkUtils
 {
@@ -131,5 +134,44 @@ internal class NetworkUtils
             default:
                 return string.Empty;
         }
+    }
+
+    public delegate Stream GenerateCompressionStream(Stream output, CompressionMode direction);
+
+    public static async Task<byte[]> HandleCompressionAsync(byte[] body, GenerateCompressionStream streamBuilder, CompressionMode direction)
+    {
+        using MemoryStream output = new();
+
+        await using Stream compressor = streamBuilder(output, direction);
+        await compressor.WriteAsync(body);
+
+        return output.ToArray();
+    }
+
+    public static async Task<byte[]> OrganizeBodyAsync(byte[] chunkedBody)
+    {
+        using MemoryStream memStream = new();
+        int index = 0;
+        while (index < chunkedBody.Length)
+        {
+            int chunkSizeEnd = Array.IndexOf(chunkedBody, (byte)'\r', index);
+            if (chunkSizeEnd == -1)
+                break;
+
+            string chunkSizeHex = Encoding.UTF8.GetString(chunkedBody, index, chunkSizeEnd - index);
+
+            if (!int.TryParse(chunkSizeHex, System.Globalization.NumberStyles.HexNumber, null, out int chunkSize) || chunkSize == 0)
+            {
+                Console.WriteLine("Parsing error - Failed to obtain chunk size.");
+                break;
+            }
+
+            index = chunkSizeEnd + 2;
+            await memStream.WriteAsync(chunkedBody.AsMemory(index, chunkSize));
+
+            index += chunkSize + 2;
+        }
+
+        return memStream.ToArray();
     }
 }
