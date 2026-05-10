@@ -39,11 +39,11 @@ internal class Program
                 .Build();
         });
 
-        apiRouter.AddGet("/*", new ServeStaticFileHandler(Path.GetFullPath("./public")));
-
         var baseRouter = new Router();
         baseRouter.AddGet("/api/*", apiRouter);
         baseRouter.AddPost("/api/*", apiRouter);
+
+        baseRouter.AddGet("/*", new ServeStaticFileHandler(Path.GetFullPath("./public")));
 
         var server = new ServerHTTP(IPAddress.Any, 8808, baseRouter);
         server.OnLogging += (s) => Console.WriteLine(s);
