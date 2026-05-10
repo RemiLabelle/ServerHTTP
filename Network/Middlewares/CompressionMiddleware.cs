@@ -34,14 +34,7 @@ namespace Network.Middlewares
             if (requestContext.Request.Headers.TryGetValue("Content-Encoding", out string? encoding)
                 && _streamGenerator.TryGetValue(encoding, out GenerateCompressionStream? streamBuilder))
             {
-                try
-                {
-                    body = await HandleCompressionAsync(body, streamBuilder, CompressionMode.Decompress);
-                }
-                catch (Exception ex) 
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                body = await HandleCompressionAsync(body, streamBuilder, CompressionMode.Decompress);
             }
 
             //rebuild request with organized and decompressed body

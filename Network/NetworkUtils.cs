@@ -76,7 +76,7 @@ public class NetworkUtils
         };
     }
 
-    public delegate Stream GenerateCompressionStream(Stream output, CompressionMode direction);
+    public delegate Stream GenerateCompressionStream(Stream stream, CompressionMode direction);
 
     public static async Task<byte[]> HandleCompressionAsync(byte[] body, GenerateCompressionStream streamBuilder, CompressionMode direction)
     {
