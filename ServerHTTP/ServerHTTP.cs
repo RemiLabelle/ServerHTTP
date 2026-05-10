@@ -151,8 +151,6 @@ public class ServerHTTP
             if (lastChar == '\r' && currentChar == '\n')
             {
                 await memStream.WriteAsync(lineBuffer.AsMemory(0, currentLineBufferIndex + 1), _cts.Token);
-                currentLineBufferIndex = -1;
-                lineBuffer = new byte[4096];
                 byte[] memData = memStream.ToArray();
                 if (memData.Length >= 4)
                 {
@@ -165,11 +163,14 @@ public class ServerHTTP
                 }
                 string line = Encoding.UTF8.GetString(lineBuffer).Trim();
                 string[] lineParts = line.Split(":");
-                if (lineParts.Length < 2)
-                    continue;
-                if (lineParts[0].Trim().ToLower() != "content-length")
-                    continue;
-                _ = int.TryParse(lineParts[1].Trim(), out contentLength);
+                if (lineParts.Length >= 2)
+                {
+                    if (lineParts[0].Trim().ToLower() == "content-length")
+                        _ = int.TryParse(lineParts[1].Trim(), out contentLength);
+                }
+
+                currentLineBufferIndex = -1;
+                lineBuffer = new byte[4096];
             }
         }
 
