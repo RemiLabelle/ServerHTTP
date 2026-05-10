@@ -27,14 +27,36 @@ namespace Network.Middlewares
             if (requestContext.Request.Headers.TryGetValue("Transfer-Encoding", out string? transfer)
                 && transfer.Contains("chunked"))
             {
-                body = await DechunkBodyAsync(body);
+                try
+                {
+                    body = await DechunkBodyAsync(body);
+                }
+                catch (Exception) 
+                {
+                    return new Response.Builder()
+                        .SetStatusCode(400)
+                        .SetReasonPhrase(GetDefaultReasonPhrase(400))
+                        .SetBody(Encoding.UTF8.GetBytes("Invalid chunked body"))
+                        .Build();
+                }
             }
 
             //decode compressed request
             if (requestContext.Request.Headers.TryGetValue("Content-Encoding", out string? encoding)
                 && _streamGenerator.TryGetValue(encoding, out GenerateCompressionStream? streamBuilder))
             {
-                body = await HandleCompressionAsync(body, streamBuilder, CompressionMode.Decompress);
+                try
+                {
+                    body = await HandleCompressionAsync(body, streamBuilder, CompressionMode.Decompress);
+                }
+                catch (Exception)
+                {
+                    return new Response.Builder()
+                        .SetStatusCode(400)
+                        .SetReasonPhrase(GetDefaultReasonPhrase(400))
+                        .SetBody(Encoding.UTF8.GetBytes("Invalid compressed body"))
+                        .Build();
+                }
             }
 
             //rebuild request with organized and decompressed body
@@ -51,16 +73,21 @@ namespace Network.Middlewares
 
             //compress response before forwarding
             if (requestContext.Request.Headers.TryGetValue("Accept-Encoding", out encoding)
-                && _streamGenerator.TryGetValue(encoding, out streamBuilder))
+                && requestContext.Request.HttpVersion == "HTTP/1.1")
             {
-                byte[] compressedBody = await HandleCompressionAsync(response.Body, streamBuilder, CompressionMode.Compress);
-                byte[] chunkedBody = await ChunkBodyAsync(compressedBody);
+                string? code = encoding.Trim().Split(',').Select(e => e.Trim()).FirstOrDefault(e => _streamGenerator.ContainsKey(e));
 
-                response = new Response.Builder(response)
-                    .SetBody(chunkedBody)
-                    .AddHeader("Content-Encoding", encoding)
-                    .AddHeader("Transfer-Encoding", "chunked")
-                    .Build();
+                if (code != null) 
+                {
+                    byte[] compressedBody = await HandleCompressionAsync(response.Body, _streamGenerator[code], CompressionMode.Compress);
+                    byte[] chunkedBody = await ChunkBodyAsync(compressedBody);
+
+                    response = new Response.Builder(response)
+                        .SetBody(chunkedBody)
+                        .AddHeader("Content-Encoding", code!)
+                        .AddHeader("Transfer-Encoding", "chunked")
+                        .Build();
+                }
             }
 
             return response;
