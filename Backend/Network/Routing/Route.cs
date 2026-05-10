@@ -1,4 +1,5 @@
 ﻿using Network.Handlers;
+using Network.HttpMessages;
 using static Network.Handlers.IHandler;
 
 namespace Network.Routing;
@@ -17,9 +18,9 @@ public class Route : IHandler
         _handler = handler.Handle;
     }
 
-    public Handler GetHandler()
+    public Task<Response> Handle(RequestContext requestContext)
     {
-        return Middlewares.BuildHandler(_handler);
+        return Middlewares.BuildHandler(_handler)(requestContext);
     }
 
     public MiddlewarePipeline Middlewares { get; private set; } = new();
