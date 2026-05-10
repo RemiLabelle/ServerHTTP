@@ -72,7 +72,8 @@ public class Router : IHandler
                 string path = requestContext.Request.Path;
                 string previousPrefix = requestContext.Prefix;
                 Match match = pathPattern.Match(path[(previousPrefix.Length - 1)..]);
-                if (match.Success)
+                Match matchLastSlash = pathPattern.Match(path[(previousPrefix.Length - 1)..] + "/");
+                if (match.Success || matchLastSlash.Success)
                 {
                     methods = currentMethods;
                     prefix = Regex.Replace(pathPattern.ToString(), @"[.*+?^${}()|[\]\\]", "");
