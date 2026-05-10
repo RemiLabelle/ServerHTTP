@@ -27,14 +27,21 @@ namespace Network.Middlewares
             if (requestContext.Request.Headers.TryGetValue("Transfer-Encoding", out string? transfer)
                 && transfer.Contains("chunked"))
             {
-                body = await OrganizeBodyAsync(body);
+                body = await DechunkBodyAsync(body);
             }
 
             //decode compressed request
             if (requestContext.Request.Headers.TryGetValue("Content-Encoding", out string? encoding)
                 && _streamGenerator.TryGetValue(encoding, out GenerateCompressionStream? streamBuilder))
             {
-                body = await HandleCompressionAsync(body, streamBuilder, CompressionMode.Decompress);
+                try
+                {
+                    body = await HandleCompressionAsync(body, streamBuilder, CompressionMode.Decompress);
+                }
+                catch (Exception ex) 
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
 
             //rebuild request with organized and decompressed body
@@ -46,6 +53,7 @@ namespace Network.Middlewares
                 )
                 .Build();
 
+            //process request
             Response response = await next(requestContext);
 
             //compress response before forwarding
@@ -53,9 +61,12 @@ namespace Network.Middlewares
                 && _streamGenerator.TryGetValue(encoding, out streamBuilder))
             {
                 byte[] compressedBody = await HandleCompressionAsync(response.Body, streamBuilder, CompressionMode.Compress);
+                byte[] chunkedBody = await ChunkBodyAsync(compressedBody);
+
                 response = new Response.Builder(response)
-                    .SetBody(compressedBody)
+                    .SetBody(chunkedBody)
                     .AddHeader("Content-Encoding", encoding)
+                    .AddHeader("Transfer-Encoding", "chunked")
                     .Build();
             }
 
