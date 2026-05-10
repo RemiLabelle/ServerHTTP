@@ -1,19 +1,25 @@
 import {useState} from "react";
+import gamesClient from "../api/publicationsClient";
 
 export default function Form({ data, setData }) {
     const [answer, setAnswer] = useState("");
 
-    function submit() {
+    async function submit() {
         if (answer === "")
             return;
 
-        setData(prevState => {
-            const word = prevState.find(w => w.text === answer);
-            if (word) {
-                return prevState.map(w => w.text === answer ? { ...w, value: w.value + 1 } : w);
-            }
-            return [...prevState, { text: answer, value: 2 }];
-        });
+        try {
+            await gamesClient.create(answer, 1);
+            const res = await gamesClient.all();
+            const words = (res.data.data ?? res.data).map(w => ({
+                text: w.title,
+                value: w.title === answer ? Math.max(2, w.content) : w.content
+            }));
+            setData(words);
+        } catch (err) {
+            console.error(err);
+        }
+
         setAnswer("");
     }
 
