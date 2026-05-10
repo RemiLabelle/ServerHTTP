@@ -12,7 +12,7 @@ public class ServeStaticFileRoute : Route
     {
         ServeStaticFileHandler serveStaticFileHandler = new(Path.GetFullPath(relativePath));
 
-        Handler handler = serveStaticFileHandler.GetHandler();
+        Handler handler = serveStaticFileHandler.Handle;
         return handler;
     }
 }

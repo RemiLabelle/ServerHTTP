@@ -1,6 +1,7 @@
 ﻿using Network.Auth;
 using Network.HttpMessages;
 using Network.Middlewares;
+using Network.Routing;
 using System.Text;
 using System.Text.Json;
 
@@ -15,49 +16,46 @@ public class RegisterHandler : IHandler
         _database = database;
     }
 
-    public IHandler.Handler GetHandler()
+    public async Task<Response> Handle(RequestContext requestContext)
     {
-        return async (requestContext) =>
+        RequestPayload? payload;
+        try
         {
-            RequestPayload? payload;
-            try
+            payload = JsonSerializer.Deserialize<RequestPayload>(requestContext.Request.Body, options: new()
             {
-                payload = JsonSerializer.Deserialize<RequestPayload>(requestContext.Request.Body, options: new()
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-            }
-            catch (JsonException)
-            {
-                return new Response.Builder()
-                    .SetStatusCode(400)
-                    .Build();
-            }
-
-            if (payload == null
-             || payload.Username == null
-             || payload.Password == null)
-            {
-                return new Response.Builder()
-                    .SetStatusCode(400)
-                    .Build();
-            }
-
-            bool success = _database.Register(payload.Username, payload.Password);
-
-            if (!success)
-            {
-                return new Response.Builder()
-                    .SetStatusCode(400)
-                    .Build();
-            }
-
+                PropertyNameCaseInsensitive = true
+            });
+        }
+        catch (JsonException)
+        {
             return new Response.Builder()
-                .SetStatusCode(201)
-                .SetHeaderContentType("application/json")
-                .SetBody(Encoding.UTF8.GetBytes(@"{""message"": ""Création d'un utilisateur avec succès.""}"))
+                .SetStatusCode(400)
                 .Build();
-        };
+        }
+
+        if (payload == null
+         || payload.Username == null
+         || payload.Password == null)
+        {
+            return new Response.Builder()
+                .SetStatusCode(400)
+                .Build();
+        }
+
+        bool success = _database.Register(payload.Username, payload.Password);
+
+        if (!success)
+        {
+            return new Response.Builder()
+                .SetStatusCode(400)
+                .Build();
+        }
+
+        return new Response.Builder()
+            .SetStatusCode(201)
+            .SetHeaderContentType("application/json")
+            .SetBody(Encoding.UTF8.GetBytes(@"{""message"": ""Création d'un utilisateur avec succès.""}"))
+            .Build();
     }
 
     public class RequestPayload(string username, string password)

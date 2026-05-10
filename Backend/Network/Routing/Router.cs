@@ -61,54 +61,51 @@ public class Router : IHandler
         return AddRoute("POST", path, handler);
     }
 
-    public Handler GetHandler()
+    public async Task<Response> Handle(RequestContext requestContext)
     {
-        return async (requestContext) =>
+        Dictionary<string, IHandler>? methods = null;
+        string? prefix = null;
+        foreach ((Regex pathPattern, Dictionary<string, IHandler> currentMethods) in _routes)
         {
-            Dictionary<string, IHandler>? methods = null;
-            string? prefix = null;
-            foreach ((Regex pathPattern, Dictionary<string, IHandler> currentMethods) in _routes)
+            string path = requestContext.Request.Path;
+            string previousPrefix = requestContext.Prefix;
+            Match match = pathPattern.Match(path[(previousPrefix.Length - 1)..]);
+            Match matchLastSlash = pathPattern.Match(path[(previousPrefix.Length - 1)..] + "/");
+            if (match.Success || matchLastSlash.Success)
             {
-                string path = requestContext.Request.Path;
-                string previousPrefix = requestContext.Prefix;
-                Match match = pathPattern.Match(path[(previousPrefix.Length - 1)..]);
-                Match matchLastSlash = pathPattern.Match(path[(previousPrefix.Length - 1)..] + "/");
-                if (match.Success || matchLastSlash.Success)
-                {
-                    methods = currentMethods;
-                    prefix = Regex.Replace(pathPattern.ToString(), @"[.*+?^${}()|[\]\\]", "");
-                    break;
-                }
+                methods = currentMethods;
+                prefix = Regex.Replace(pathPattern.ToString(), @"[.*+?^${}()|[\]\\]", "");
+                break;
             }
+        }
 
-            if (methods == null
-                || prefix == null)
-                return new Response.Builder()
-                    .SetStatusCode(404)
-                    .Build();
-
-            if (!methods.TryGetValue(requestContext.Request.Method, out IHandler? route))
-                return new Response.Builder()
-                    .SetStatusCode(404)
-                    .Build();
-
-            RequestContext newRequestContext = new RequestContext.Builder(requestContext)
-                .AppendToPrefix(prefix[1..])
+        if (methods == null
+            || prefix == null)
+            return new Response.Builder()
+                .SetStatusCode(404)
                 .Build();
 
-            Handler pipeline = Middlewares.BuildHandler(route.GetHandler());
+        if (!methods.TryGetValue(requestContext.Request.Method, out IHandler? route))
+            return new Response.Builder()
+                .SetStatusCode(404)
+                .Build();
 
-            try
-            {
-                return await pipeline(newRequestContext);
-            }
-            catch
-            {
-                return new Response.Builder()
-                    .SetStatusCode(500)
-                    .Build();
-            }
-        };
+        RequestContext newRequestContext = new RequestContext.Builder(requestContext)
+            .AppendToPrefix(prefix[1..])
+            .Build();
+
+        Handler pipeline = Middlewares.BuildHandler(route.Handle);
+
+        try
+        {
+            return await pipeline(newRequestContext);
+        }
+        catch
+        {
+            return new Response.Builder()
+                .SetStatusCode(500)
+                .Build();
+        }
     }
 
     public MiddlewarePipeline Middlewares { get; private set; } = new();

@@ -13,51 +13,48 @@ public class ServeStaticFileHandler : IHandler
         AbsolutePath = absolutePath;
     }
 
-    public IHandler.Handler GetHandler()
+    public async Task<Response> Handle(RequestContext requestContext)
     {
-        return async (requestContext) =>
-        {
-            string requestedFile = requestContext.Request.Path[requestContext.Prefix.Length..];
-            string absoluteRequestedFile = Path.GetFullPath(Path.Combine(AbsolutePath, requestedFile));
-            if (!absoluteRequestedFile.StartsWith(AbsolutePath))
-                return new Response.Builder()
-                    .SetStatusCode(400)
-                    .SetBody(Encoding.UTF8.GetBytes(@"{""status"": ""Cannot use path traversal.""}"))
-                    .Build();
-            if (!File.Exists(absoluteRequestedFile))
-                return new Response.Builder()
-                    .SetStatusCode(404)
-                    .SetBody(Encoding.UTF8.GetBytes(@"{""status"": ""File not found.""}"))
-                    .Build();
-            byte[] fileContent = await File.ReadAllBytesAsync(absoluteRequestedFile);
-
-            string contentType = "text/plain";
-            string fileExtension = Path.GetExtension(absoluteRequestedFile)[1..].ToLower();
-
-            switch (fileExtension)
-            {
-                case "css":
-                    contentType = "text/css";
-                    break;
-                case "csv":
-                    contentType = "text/csv";
-                    break;
-                case "html":
-                    contentType = "text/html";
-                    break;
-                case "js":
-                    contentType = "text/javascript";
-                    break;
-                case "xml":
-                    contentType = "text/sml";
-                    break;
-            }
-
+        string requestedFile = requestContext.Request.Path[requestContext.Prefix.Length..];
+        string absoluteRequestedFile = Path.GetFullPath(Path.Combine(AbsolutePath, requestedFile));
+        if (!absoluteRequestedFile.StartsWith(AbsolutePath))
             return new Response.Builder()
-                .SetStatusCode(200)
-                .SetHeaderContentType(contentType)
-                .SetBody(fileContent)
+                .SetStatusCode(400)
+                .SetBody(Encoding.UTF8.GetBytes(@"{""status"": ""Cannot use path traversal.""}"))
                 .Build();
-        };
+        if (!File.Exists(absoluteRequestedFile))
+            return new Response.Builder()
+                .SetStatusCode(404)
+                .SetBody(Encoding.UTF8.GetBytes(@"{""status"": ""File not found.""}"))
+                .Build();
+        byte[] fileContent = await File.ReadAllBytesAsync(absoluteRequestedFile);
+
+        string contentType = "text/plain";
+        string fileExtension = Path.GetExtension(absoluteRequestedFile)[1..].ToLower();
+
+        switch (fileExtension)
+        {
+            case "css":
+                contentType = "text/css";
+                break;
+            case "csv":
+                contentType = "text/csv";
+                break;
+            case "html":
+                contentType = "text/html";
+                break;
+            case "js":
+                contentType = "text/javascript";
+                break;
+            case "xml":
+                contentType = "text/sml";
+                break;
+        }
+
+        return new Response.Builder()
+            .SetStatusCode(200)
+            .SetHeaderContentType(contentType)
+            .SetBody(fileContent)
+            .Build();
     }
 }
