@@ -9,10 +9,12 @@ function App() {
     const [data, setData] = useState([]);
 
     return (
-        <div className="App">
+        <div className="App" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }} >
             <Header/>
-            <Graph data={data} />
-            <Form data={data} setData={setData} />
+            <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                <Graph data={data} />
+                <Form data={data} setData={setData} />
+            </main>
             <Footer/>
         </div>
     );

@@ -4,6 +4,9 @@ export default function Form({ data, setData }) {
     const [answer, setAnswer] = useState("");
 
     function submit() {
+        if (answer === "")
+            return;
+
         setData(prevState => {
             const word = prevState.find(w => w.text === answer);
             if (word) {
