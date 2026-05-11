@@ -134,53 +134,54 @@ public class ServerHTTP
     private async Task<byte[]> GetRequestBytesAsync(NetworkStream stream)
     {
         using MemoryStream memStream = new();
-        byte[] lineBuffer = new byte[4096];
-        int currentLineBufferIndex = -1;
-
+        byte[] buffer = new byte[4096];
         int contentLength = 0;
-        byte currentChar;
+
         while (!_cts.IsCancellationRequested)
         {
-            currentChar = (byte)stream.ReadByte();
-            lineBuffer[++currentLineBufferIndex] = currentChar;
+            int bytesRead = await stream.ReadAsync(buffer, _cts.Token);
+            if (bytesRead == 0) break;
 
-            if (currentLineBufferIndex == 0)
-                continue;
+            await memStream.WriteAsync(buffer.AsMemory(0, bytesRead), _cts.Token);
 
-            byte lastChar = lineBuffer[currentLineBufferIndex - 1];
-            if (lastChar == '\r' && currentChar == '\n')
+            byte[] data = memStream.ToArray();
+            int headerEnd = -1;
+
+            for (int i = 0; i <= data.Length - 4; i++)
             {
-                await memStream.WriteAsync(lineBuffer.AsMemory(0, currentLineBufferIndex + 1), _cts.Token);
-                byte[] memData = memStream.ToArray();
-                if (memData.Length >= 4)
+                if (data[i] == '\r' && data[i + 1] == '\n' && data[i + 2] == '\r' && data[i + 3] == '\n')
                 {
-                    byte[] lastFourBytes = memData[^4..];
-                    if (lastFourBytes[0] == '\r'
-                     && lastFourBytes[1] == '\n'
-                     && lastFourBytes[2] == '\r'
-                     && lastFourBytes[3] == '\n')
-                        break;
+                    headerEnd = i;
+                    break;
                 }
-                string line = Encoding.UTF8.GetString(lineBuffer).Trim();
-                string[] lineParts = line.Split(":");
-                if (lineParts.Length >= 2)
-                {
-                    if (lineParts[0].Trim().ToLower() == "content-length")
-                        _ = int.TryParse(lineParts[1].Trim(), out contentLength);
-                }
-
-                currentLineBufferIndex = -1;
-                lineBuffer = new byte[4096];
             }
+
+            if (headerEnd == -1) continue;
+
+            string headers = Encoding.UTF8.GetString(data, 0, headerEnd);
+            foreach (string line in headers.Split("\r\n"))
+            {
+                int colonIndex = line.IndexOf(':');
+                if (colonIndex <= 0) continue;
+                if (line[..colonIndex].Trim().ToLower() == "content-length")
+                    int.TryParse(line[(colonIndex + 1)..].Trim(), out contentLength);
+            }
+
+            int headerTotalLength = headerEnd + 4;
+            byte[] alreadyReadBody = data[headerTotalLength..];
+            int remaining = contentLength - alreadyReadBody.Length;
+
+            if (remaining > 0)
+            {
+                byte[] restOfBody = new byte[remaining];
+                await stream.ReadExactlyAsync(restOfBody, _cts.Token);
+                await memStream.WriteAsync(alreadyReadBody, _cts.Token);
+                await memStream.WriteAsync(restOfBody, _cts.Token);
+            }
+
+            break;
         }
 
-        if (contentLength > 0)
-        {
-            byte[] bodyContent = new byte[contentLength];
-            await stream.ReadExactlyAsync(bodyContent, _cts.Token);
-
-            await memStream.WriteAsync(bodyContent, _cts.Token);
-        }
         return memStream.ToArray();
     }
 }

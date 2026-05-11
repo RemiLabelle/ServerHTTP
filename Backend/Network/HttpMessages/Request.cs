@@ -25,17 +25,15 @@ public class Request : Message
     {
         if (!Headers.TryGetValue("Cookie", out string? rawCookies))
             return new Dictionary<string, string>();
-
         Dictionary<string, string> cookies = new();
-
         foreach (string cookie in rawCookies.Split(";"))
         {
-            string[] cookieParts = cookie.Split('=');
-            if (cookieParts.Length < 2)
-                continue;
-            cookies.Add(cookieParts[0], cookie.Substring(cookieParts[0].Length + 1));
+            int equalsIndex = cookie.IndexOf('=');
+            if (equalsIndex <= 0) continue;
+            string name = cookie[..equalsIndex].Trim();
+            string value = cookie[(equalsIndex + 1)..].Trim();
+            cookies.TryAdd(name, value);
         }
-
         return cookies;
     }
 

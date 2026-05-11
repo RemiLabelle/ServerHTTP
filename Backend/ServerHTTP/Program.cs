@@ -1,18 +1,74 @@
-﻿using Network.Handlers;
+﻿using Network.Auth;
+using Network.Handlers;
+using Network.Handlers.AuthHandlers;
+using Network.Handlers.PublicationHandlers;
 using Network.HttpMessages;
 using Network.Middlewares;
 using Network.Routing;
-using Network.Routing.Routes;
-using System.Diagnostics;
-using System.IO.Compression;
+using Publication;
+using System.Net;
 using System.Text;
-using static Network.NetworkUtils;
 
 namespace ServerHTTP;
 
 internal class Program
 {
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
+        var authDatabase = new AuthDatabase();
+        var publicationDatabase = new PublicationDatabase();
+
+        var apiRouter = new Router();
+
+        apiRouter.Middlewares.AddMiddleware(new CompressionMiddleware());
+
+        apiRouter.AddPost("/login/", new LoginHandler(authDatabase));
+        apiRouter.AddPost("/register/", new RegisterHandler(authDatabase));
+
+        var authMiddleware = new AuthMiddleware(authDatabase);
+
+        var createPublicationRoute = new Route(new CreatePublicationHandler(publicationDatabase));
+        createPublicationRoute.Middlewares.AddMiddleware(authMiddleware);
+        apiRouter.AddPost("/publications/", createPublicationRoute);
+
+        var getPublicationsRoute = new Route(new GetPublicationsHandler(publicationDatabase));
+        getPublicationsRoute.Middlewares.AddMiddleware(authMiddleware);
+        apiRouter.AddGet("/publications/", getPublicationsRoute);
+
+        apiRouter.AddGet("/test/", async (req) =>
+        {
+            return new Response.Builder()
+                .SetStatusCode(200)
+                .SetBody(Encoding.UTF8.GetBytes(@"{""Testing"": ""This is working!""}"))
+                .Build();
+        });
+
+        var baseRouter = new Router();
+
+        baseRouter.Middlewares.AddMiddleware(new CorsMiddleware());
+
+        baseRouter.AddRoute("OPTIONS", "/api/*", apiRouter);
+
+        baseRouter.AddGet("/ping/", async (req) =>
+        {
+            return new Response.Builder()
+                .SetStatusCode(200)
+                .SetBody(Encoding.UTF8.GetBytes("pong"))
+                .Build();
+        });
+
+        baseRouter.AddGet("/api/*", apiRouter);
+        baseRouter.AddPost("/api/*", apiRouter);
+
+        baseRouter.AddGet("/*", new ServeStaticFileHandler(Path.GetFullPath("./public")));
+
+        var server = new ServerHTTP(IPAddress.Any, 8808, baseRouter);
+        server.OnLogging += (s) => Console.WriteLine(s);
+        Console.WriteLine("Appuyez sur une touche pour arrêter le serveur.");
+        _ = server.ListenAsync();
+
+        Console.ReadKey();
+        Console.WriteLine("Arrêt du serveur");
+        server.Stop();
     }
 }

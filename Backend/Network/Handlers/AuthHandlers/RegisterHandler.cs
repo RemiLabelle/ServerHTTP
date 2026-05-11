@@ -51,10 +51,13 @@ public class RegisterHandler : IHandler
                     .SetStatusCode(400)
                     .Build();
             }
+            
+            Token? token = _database.Authenticate(payload.Username, payload.Password);
 
             return new Response.Builder()
                 .SetStatusCode(201)
                 .SetHeaderContentType("application/json")
+                .AddHeader("Set-Cookie", $"{AuthMiddleware.COOKIE_KEY_NAME}={token!.value}; HttpOnly; Path=/; SameSite=Lax")
                 .SetBody(Encoding.UTF8.GetBytes(@"{""message"": ""Création d'un utilisateur avec succès.""}"))
                 .Build();
         };

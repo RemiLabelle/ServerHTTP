@@ -27,6 +27,23 @@ public class PublicationDatabase
         return (Publication)publication.Clone();
     }
 
+    public Publication IncrementOrAdd(string username, string title, string defaultContent)
+    {
+        Publication? existing = _publications.Values
+            .SelectMany(pub => pub)
+            .FirstOrDefault(pub => pub.Title == title);
+
+        if (existing != null)
+        {
+            if (int.TryParse(existing.Content, out int count))
+                existing.Content = (count + 1).ToString();
+
+            return (Publication)existing.Clone();
+        }
+
+        return AddPublication(username, title, defaultContent);
+    }
+
     public List<Publication>? GetPublicationsFromUsername(string username)
     {
         return _publications.TryGetValue(username, out var value) ? value : null;
