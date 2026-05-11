@@ -9,7 +9,6 @@ export default function Register({ setAuth, setIsLoggedIn }) {
     async function register() {
         await authClient.register(username, password).then((response) => {
             setIsLoggedIn(true);
-            console.log(response);
         })
         .catch(() => setError(true));
     }
@@ -21,7 +20,7 @@ export default function Register({ setAuth, setIsLoggedIn }) {
                     username.length === 0 || password.length === 0 ? (
                         <>Certains champs n'ont pas de saisie</>
                     ) : (
-                        <>Veuillez réessayer plus tard</>
+                        <>Nom d'utilisateur déjà utilisé</>
                     )
                 }
             </span>

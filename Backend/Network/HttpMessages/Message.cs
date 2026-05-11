@@ -51,10 +51,12 @@ public abstract class Message
         Dictionary<string, string> headers = new(StringComparer.OrdinalIgnoreCase);
         foreach (var line in headersLines.Split("\r\n"))
         {
-            var nameValue = line.Split(":");
-            headers.Add(nameValue[0].Trim(), nameValue[1].Trim());
+            int colonIndex = line.IndexOf(':');
+            if (colonIndex <= 0) continue;
+            string name = line[..colonIndex].Trim();
+            string value = line[(colonIndex + 1)..].Trim();
+            headers.TryAdd(name, value);
         }
-
         return headers;
     }
 

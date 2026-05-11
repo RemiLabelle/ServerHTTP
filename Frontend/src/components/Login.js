@@ -9,7 +9,6 @@ export default function Login({ setAuth, setIsLoggedIn })  {
     async function login() {
         await authClient.login(username, password).then((response) => {
             setIsLoggedIn(true);
-            console.log(response);
         })
         .catch(() => setError(true));
     }

@@ -52,7 +52,7 @@ public class CreatePublicationHandler : IHandler
                     .Build();
             }
 
-            Publication.Publication publication = _database.AddPublication(user.Name, payload.Title, payload.Content);
+            Publication.Publication publication = _database.IncrementOrAdd(user.Name, payload.Title, payload.Content);
 
             string jsonResponse = JsonSerializer.Serialize(publication, options: new()
             {

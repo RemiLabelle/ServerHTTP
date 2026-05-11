@@ -1,6 +1,8 @@
 ﻿using Network.Auth;
 using Network.HttpMessages;
 using Network.Routing;
+using System.Net;
+using System.Reflection.PortableExecutable;
 using static Network.Handlers.IHandler;
 
 namespace Network.Middlewares;
@@ -19,6 +21,7 @@ public class AuthMiddleware : IMiddleware
     public Task<Response> Handle(RequestContext requestContext, Handler next)
     {
         Dictionary<string, string> cookies = requestContext.Request.Cookies();
+
         if (!cookies.TryGetValue(COOKIE_KEY_NAME, out string? tokenString))
             return Task.FromResult(
                 new Response.Builder()

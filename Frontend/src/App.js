@@ -17,8 +17,7 @@ function App() {
         if (!isLoggedIn) return;
 
         gamesClient.all().then((response) => {
-            console.log(response);
-            const words = response.data.words;
+            const words = response.data;
             setData(words);
         })
         .catch(console.error)
@@ -31,7 +30,7 @@ function App() {
                     isLoggedIn ? (
                         <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
                             <Graph data={data} />
-                            <Form data={data} setData={setData} />
+                            <Form setData={setData} />
                         </main>
                     ) : (
                         <main>

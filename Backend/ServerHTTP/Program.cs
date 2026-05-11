@@ -26,10 +26,14 @@ internal class Program
         apiRouter.AddPost("/register/", new RegisterHandler(authDatabase));
 
         var authMiddleware = new AuthMiddleware(authDatabase);
+
         var createPublicationRoute = new Route(new CreatePublicationHandler(publicationDatabase));
+        createPublicationRoute.Middlewares.AddMiddleware(authMiddleware);
         apiRouter.AddPost("/publications/", createPublicationRoute);
 
-        apiRouter.AddGet("/publications/", new GetPublicationsHandler(publicationDatabase));
+        var getPublicationsRoute = new Route(new GetPublicationsHandler(publicationDatabase));
+        getPublicationsRoute.Middlewares.AddMiddleware(authMiddleware);
+        apiRouter.AddGet("/publications/", getPublicationsRoute);
 
         apiRouter.AddGet("/test/", async (req) =>
         {
@@ -40,6 +44,19 @@ internal class Program
         });
 
         var baseRouter = new Router();
+
+        baseRouter.Middlewares.AddMiddleware(new CorsMiddleware());
+
+        baseRouter.AddRoute("OPTIONS", "/api/*", apiRouter);
+
+        baseRouter.AddGet("/ping/", async (req) =>
+        {
+            return new Response.Builder()
+                .SetStatusCode(200)
+                .SetBody(Encoding.UTF8.GetBytes("pong"))
+                .Build();
+        });
+
         baseRouter.AddGet("/api/*", apiRouter);
         baseRouter.AddPost("/api/*", apiRouter);
 

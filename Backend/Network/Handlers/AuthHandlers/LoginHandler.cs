@@ -54,7 +54,7 @@ public class LoginHandler : IHandler
 
             return new Response.Builder()
                 .SetStatusCode(200)
-                .AddHeader("Set-Cookie", $"{AuthMiddleware.COOKIE_KEY_NAME}={token.value}; HttpOnly")
+                .AddHeader("Set-Cookie", $"{AuthMiddleware.COOKIE_KEY_NAME}={token.value}; HttpOnly; Path=/; SameSite=Lax")
                 .SetBody(Encoding.UTF8.GetBytes(@"{""message"": ""Vous êtes connecté avec succès""}"))
                 .Build();
         };

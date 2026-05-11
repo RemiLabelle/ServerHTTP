@@ -1,7 +1,7 @@
 import {useState} from "react";
 import gamesClient from "../api/publicationsClient";
 
-export default function Form({ data, setData }) {
+export default function Form({ setData }) {
     const [answer, setAnswer] = useState("");
 
     async function submit() {
@@ -9,11 +9,11 @@ export default function Form({ data, setData }) {
             return;
 
         try {
-            await gamesClient.create(answer, 1);
+            await gamesClient.create(answer, '1');
             const res = await gamesClient.all();
             const words = (res.data.data ?? res.data).map(w => ({
                 text: w.title,
-                value: w.title === answer ? Math.max(2, w.content) : w.content
+                value: parseInt(w.content)
             }));
             setData(words);
         } catch (err) {
