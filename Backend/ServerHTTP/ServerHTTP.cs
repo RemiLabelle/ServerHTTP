@@ -112,6 +112,8 @@ public class ServerHTTP
                 return;
             }
 
+            OnLogging?.Invoke($"{tcpClient.Client.RemoteEndPoint} requested endpoint {request!.Method} {request!.Path}");
+
             Response response;
             try
             {
@@ -130,7 +132,7 @@ public class ServerHTTP
                 );
                 return;
             }
-            OnLogging?.Invoke($"Sending the handler's response to {tcpClient.Client.RemoteEndPoint}");
+            OnLogging?.Invoke($"Sending the handler's response to {tcpClient.Client.RemoteEndPoint} with {response.StatusCode} status code");
             await stream.WriteAsync(response.GetMessage(), _cts.Token);
             stream.Close();
         }
