@@ -6,6 +6,9 @@ using System.Text.Json;
 
 namespace Network.Handlers.PublicationHandlers;
 
+/// <summary>
+/// Creates a publication for the authenticated user.
+/// </summary>
 public class CreatePublicationHandler : IHandler
 {
     private PublicationDatabase _database;

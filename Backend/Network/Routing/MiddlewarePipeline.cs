@@ -4,6 +4,9 @@ using static Network.Middlewares.IMiddleware;
 
 namespace Network.Routing;
 
+/// <summary>
+/// Builds a middleware execution chain around a final request handler.
+/// </summary>
 public class MiddlewarePipeline
 {
     private List<Middleware> _middlewares = new();

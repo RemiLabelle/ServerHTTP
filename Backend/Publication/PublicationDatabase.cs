@@ -1,5 +1,8 @@
 ﻿namespace Publication;
 
+/// <summary>
+/// Stores publications in memory and provides add, update, and retrieval operations.
+/// </summary>
 public class PublicationDatabase
 {
     private Dictionary<string, List<Publication>> _publications;

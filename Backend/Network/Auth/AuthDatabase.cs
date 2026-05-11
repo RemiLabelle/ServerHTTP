@@ -1,5 +1,8 @@
 ﻿namespace Network.Auth;
 
+/// <summary>
+/// Stores users and authentication tokens in memory and provides registration and lookup operations.
+/// </summary>
 public class AuthDatabase
 {
     private IList<User> _users = new List<User>();

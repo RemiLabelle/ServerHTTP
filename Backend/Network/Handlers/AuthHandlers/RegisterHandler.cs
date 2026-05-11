@@ -6,6 +6,9 @@ using System.Text.Json;
 
 namespace Network.Handlers.AuthHandlers;
 
+/// <summary>
+/// Handles new user registration and returns a session token cookie after creating the account.
+/// </summary>
 public class RegisterHandler : IHandler
 {
     private AuthDatabase _database;

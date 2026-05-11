@@ -7,26 +7,44 @@ using System.Text;
 
 namespace ServerHTTP;
 
+/// <summary>
+/// Accepts incoming TCP clients, parses requests, and dispatches them through the configured handler.
+/// </summary>
 public class ServerHTTP
 {
     private CancellationTokenSource _cts = new();
     private IPEndPoint _ipEndPoint;
     private IHandler _handler;
 
+    /// <summary>
+    /// Raised when the server wants to emit a log message.
+    /// </summary>
     public event Action<string>? OnLogging;
 
+    /// <summary>
+    /// Initializes a new server instance for the specified endpoint and request handler.
+    /// </summary>
     public ServerHTTP(IPEndPoint ipEndpoint, IHandler handler)
     {
         _ipEndPoint = ipEndpoint;
         _handler = handler;
     }
 
+    /// <summary>
+    /// Initializes a new server instance for the specified IP address, port, and request handler.
+    /// </summary>
     public ServerHTTP(IPAddress ipAddress, int port, IHandler handler)
         : this(IPEndPoint.Parse(ipAddress.ToString() + ":" + port), handler) { }
 
+    /// <summary>
+    /// Initializes a new server instance for the specified IP string, port, and request handler.
+    /// </summary>
     public ServerHTTP(string ip, int port, IHandler handler)
         : this(IPAddress.Parse(ip), port, handler) { }
 
+    /// <summary>
+    /// Starts listening for incoming client connections and processes each request asynchronously.
+    /// </summary>
     public async Task ListenAsync()
     {
         TcpListener listener = new(_ipEndPoint);
@@ -63,6 +81,9 @@ public class ServerHTTP
         }
     }
 
+    /// <summary>
+    /// Stops the server and cancels any pending accept or request operations.
+    /// </summary>
     public void Stop()
     {
         OnLogging?.Invoke("Stopping server");

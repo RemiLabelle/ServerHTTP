@@ -6,6 +6,9 @@ using System.Text.Json;
 
 namespace Network.Handlers.AuthHandlers;
 
+/// <summary>
+/// Handles authentication requests for existing users and returns a session token cookie on success.
+/// </summary>
 public class LoginHandler : IHandler
 {
     private AuthDatabase _database;

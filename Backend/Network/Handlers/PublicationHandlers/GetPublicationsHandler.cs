@@ -5,6 +5,9 @@ using System.Text.Json;
 
 namespace Network.Handlers.PublicationHandlers;
 
+/// <summary>
+/// Returns publications for either a specific user or all users.
+/// </summary>
 public class GetPublicationsHandler : IHandler
 {
     private PublicationDatabase _database;

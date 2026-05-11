@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Network.Handlers;
 
+/// <summary>
+/// Serves static files from a configured root directory.
+/// </summary>
 public class ServeStaticFileHandler : IHandler
 {
     public string AbsolutePath { get; private set; }

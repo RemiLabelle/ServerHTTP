@@ -7,6 +7,9 @@ using static Network.Handlers.IHandler;
 
 namespace Network.Middlewares;
 
+/// <summary>
+/// Rejects requests that do not carry a valid authentication token cookie.
+/// </summary>
 public class AuthMiddleware : IMiddleware
 {
     public const string COOKIE_KEY_NAME = "token";
