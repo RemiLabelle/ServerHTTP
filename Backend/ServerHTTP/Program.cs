@@ -35,14 +35,6 @@ internal class Program
         getPublicationsRoute.Middlewares.AddMiddleware(authMiddleware);
         apiRouter.AddGet("/publications/", getPublicationsRoute);
 
-        apiRouter.AddGet("/test/", async (req) =>
-        {
-            return new Response.Builder()
-                .SetStatusCode(200)
-                .SetBody(Encoding.UTF8.GetBytes(@"{""Testing"": ""This is working!""}"))
-                .Build();
-        });
-
         var baseRouter = new Router();
 
         baseRouter.Middlewares.AddMiddleware(new CorsMiddleware());
