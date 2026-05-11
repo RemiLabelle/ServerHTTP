@@ -18,6 +18,10 @@ public class ServeStaticFileHandler : IHandler
         return async (requestContext) =>
         {
             string requestedFile = requestContext.Request.Path[requestContext.Prefix.Length..];
+
+            if (string.IsNullOrEmpty(requestedFile) || requestedFile == "/")
+                requestedFile = "index.html";
+
             string absoluteRequestedFile = Path.GetFullPath(Path.Combine(AbsolutePath, requestedFile));
             if (!absoluteRequestedFile.StartsWith(AbsolutePath))
                 return new Response.Builder()
