@@ -41,14 +41,6 @@ internal class Program
 
         baseRouter.AddRoute("OPTIONS", "/api/*", apiRouter);
 
-        baseRouter.AddGet("/ping/", async (req) =>
-        {
-            return new Response.Builder()
-                .SetStatusCode(200)
-                .SetBody(Encoding.UTF8.GetBytes("pong"))
-                .Build();
-        });
-
         baseRouter.AddGet("/api/*", apiRouter);
         baseRouter.AddPost("/api/*", apiRouter);
 
